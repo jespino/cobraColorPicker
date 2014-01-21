@@ -1,0 +1,117 @@
+import _new
+import _global as g
+
+def on(el, signal):
+    def _decorator(func):
+        el.on(signal, func)
+        return func
+    return _decorator
+
+class CoffeeColorPicker:
+    def __init__(el, options):
+        this.settings = {
+            "color": {
+                "hue": 180,
+                "sat": 50,
+                "lit": 50,
+            },
+            "freezeTime": 1000
+        }
+
+        this.settings = jq.extend(True, {}, this.settings, options)
+
+        this.el = el
+        this.el.data("cobraColorPicker", this)
+
+        this._rect = el[0].getBoundingClientRect()
+        this._color = this.settings.color
+        this._setColor(this._color.hue, this._color.sat,  this._color.lit)
+        this._bindEvents()
+
+        return None
+
+    def refresh():
+        this._rect = this.el[0].getBoundingClientRect()
+        return None
+
+    def _bindEvents():
+        self = this
+
+        @on(this.el, "mousemove")
+        def _onMouseMove(event):
+            if self.await and self.await > _new(Date):
+                return
+            self.await = None
+            self._move(event.pageY, event.pageX)
+
+        @on(this.el, "mousewheel")
+        @on(this.el, "DOMMouseScroll")
+        def _onMouseWheel(event):
+            event.preventDefault()
+
+            if event.originalEvent.detail:
+                delta = event.originalEvent.detail * (-120)
+            else:
+                delta = event.originalEvent.wheelDelta
+
+            delta += self._prev or 0
+
+            if -500 > delta or 500 < delta:
+                return None
+
+            sat = delta + 500
+
+            self._setColor(self._color.hue, sat / 1000 * 100, self._color.lit)
+            self._prev = delta
+
+        @on(this.el, "click")
+        def _onClick(event):
+            event.preventDefault()
+            self.await = self.settings.freezeTime + _new(Date).getTime()
+            pickedColor = jq.Color(jq(event.target), 'background-color').toHexString(0)
+            self.el.trigger('pick', pickedColor)
+
+
+    def _unbindEvents():
+        this.el.off("mousemove")
+        this.el.off("mousewheel")
+        this.el.off("DOMMouseScroll")
+        this.el.off("click")
+
+    def _setColor(hue, sat, lit):
+        this.el.css("background-color", "hsla(" + hue + "," + sat + "%," + lit + "%, 1)")
+        this._color = {
+            "hue": hue,
+            "sat": sat,
+            "lit": lit,
+        }
+
+    def _move(x, y):
+        if this._rect.top == 0 or this._rect.left == 0:
+            this.refresh()
+        y_offset = jq(document).scrollTop()
+        x_offset = jq(document).scrollLeft()
+        y = Math.max(0, y - (this._rect.top + y_offset))
+        x = Math.max(0, x - (this._rect.left + x_offset))
+
+        y /= this._rect.height
+        x /= this._rect.width
+
+        return this._setColor(x * 360, this._color.sat, y * 100)
+
+
+jq = g.jQuery or g.Zepto
+
+def picker(el, options):
+    el = jq(el)
+    if el.data("cobraColorPicker") is undefined:
+        pickerInstance = _new(CoffeeColorPicker)
+        pickerInstance.__init__(el, options)
+        return pickerInstance
+
+    return el.data("cobraColorPicker")
+
+def cobraColorPicker(options):
+    return picker(this, options)
+
+jq.fn.cobraColorPicker = cobraColorPicker

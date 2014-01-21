@@ -1,0 +1,24 @@
+def _coffe_color_picker_link(scope, elm, attrs):
+    element = angular.element(elm)
+    if attrs.coffeeColorPickerOptions:
+        options = scope['$eval'](attrs.coffeeColorPickerOptions)
+        element.coffeeColorPicker(options)
+    else:
+        element.coffeeColorPicker()
+
+    def _pick_handler(event, color):
+        def _apply_color():
+            scope['$eval'](attrs.coffeeColorPicker)
+
+        scope['$color'] = color
+        scope['$apply'](_apply_color)
+
+    element.on 'pick', _pick_handler
+
+CoffeeColorPickerDirective = {
+    "restrict": "A",
+    "link": _coffe_color_picker_link
+}
+
+module = angular.module('coffeeColorPicker', [])
+module.directive('coffeeColorPicker', CoffeeColorPickerDirective)
